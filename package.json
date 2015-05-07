@@ -1,0 +1,26 @@
+{
+  "name": "bju",
+  "version": "1.0.0",
+  "description": "backend for yiju",
+  "main": "server.js",
+  "dependencies": {
+    "request": "^2.55.0",
+    "restify": "^3.0.2",
+    "mongoose": "^4.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vikingmute/bju.git"
+  },
+  "author": "vikingmute",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vikingmute/bju/issues"
+  },
+  "homepage": "https://github.com/vikingmute/bju"
+}
