@@ -10,7 +10,8 @@ var Song = new Schema({
 	sid: Number,
 	title: String,
 	artist: String,
-	pic: String
+	pic: String,
+	url: String
 });
 var Song = mongoose.model('Song', Song);
 
@@ -31,7 +32,8 @@ server.get('/add/:id', function(req, res, next) {
 			sid: data.id,
 			title: data.title,
 			artist: data.artist,
-			pic: data.pic
+			pic: data.pic,
+			url: data.url
  		};
  		var song = new Song(userData);
  		song.save(function(error, data) {
