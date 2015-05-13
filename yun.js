@@ -8,7 +8,6 @@ exports.songDetail = function(id, callback) {
 		'Cookie' : 'appver=1.5.0.75771;', 
 		'Referer' : 'http://music.163.com'
 	};
-
 	var options = {
 	    uri: url,
 	    headers: headers,

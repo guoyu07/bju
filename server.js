@@ -1,6 +1,6 @@
 var restify = require('restify');
 var mongoose = require('mongoose');
-var userModel = require('./userModel');
+var user = require('./userModel').User;
 var yun = require('./yun');
 
 db = mongoose.createConnection("mongodb://localhost");
@@ -74,15 +74,26 @@ server.post('/adduser', function(req, res) {
 		password: data.password,
 		avatar: data.avatar
 	};
-	var user = new userModel.User();
 	user.create(userData, function(data) {
 		res.json(data);
 	});
 });
+server.get('/checkuser/:name', function(req, res) {
+  var name = req.params.name;
+  user.check(name, function(data){
+    res.json(data);
+  });
+});
 server.get('/connect/:sid', function(req, res, next) {
 	var sid = req.params.sid;
-	yun.doubanInfo(sid, function(data) {
-		res.json(data);
+	yun.doubanInfo(sid, function(dinfo) {
+    user.check(dinfo.name, function(data) {
+      if (!data.exsitUser) {
+        data.info = dinfo;
+      }
+      res.json(data);
+    });
+    //res.json(dinfo);
 	});
 });
 server.get('/users', function(req, res, next) {

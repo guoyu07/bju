@@ -60,18 +60,29 @@ User.prototype.create = function(data, callback) {
 	});
 }
 
-User.prototype.check = function(sid, callback) {
-	var options = {sid: sid};
-	this._User.find(options, function(error, user) {
+User.prototype.check = function(name, callback) {
+	var options = {name: name};
+	var callback = callback || function () {};
+	this._User.find(options, function(error, userArr) {
+		var data = {};
 		if (!error) {
-			
+			if (Array.isArray(userArr) && userArr.length > 0) {
+				data.exsitUser = true;
+				data.pass = true;
+				data.info = userArr[0];
+			} else if (Array.isArray(userArr) && userArr.length === 0) {
+				data.exsitUser = false;
+				data.pass = true;
+			} else {
+				data.pass = false;
+			}
+			callback(data);
 		}
 	});
-} 
+}
 
 User.prototype.logout = function() {
 
 }
 
-exports.User = User;
-
+exports.User = new User();
