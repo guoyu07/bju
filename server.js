@@ -2,6 +2,8 @@ var restify = require('restify');
 var mongoose = require('mongoose');
 var user = require('./userModel').User;
 var yun = require('./yun');
+var crypto = require('crypto');
+var qs = require('querystring');
 
 db = mongoose.createConnection("mongodb://localhost");
 var Schema = mongoose.Schema,
@@ -13,6 +15,12 @@ var Song = new Schema({
 	pic: String,
 	url: String
 });
+
+function md5(string) {
+	var hash = crypto.createHash('md5').update(string).digest('hex');
+	return hash;
+}
+
 var Song = mongoose.model('Song', Song);
 
 var server = restify.createServer({ name: 'mongo-api' });
@@ -78,6 +86,14 @@ server.post('/adduser', function(req, res) {
 		res.json(data);
 	});
 });
+
+server.post('/login', function(req, res) {
+  var data = req.params;
+  user.login(data.username, md5(data.password), function(data) {
+    res.json(data);
+  });
+});
+
 server.get('/checkuser/:name', function(req, res) {
   var name = req.params.name;
   user.check(name, function(data){
