@@ -8,7 +8,9 @@
     "restify": "^3.0.2",
     "mongoose": "^4.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "restify-cookies": "^0.1.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"

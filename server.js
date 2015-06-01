@@ -4,6 +4,7 @@ var user = require('./userModel').User;
 var yun = require('./yun');
 var crypto = require('crypto');
 var qs = require('querystring');
+var CookieParser = require('restify-cookies');
 
 db = mongoose.createConnection("mongodb://localhost");
 var Schema = mongoose.Schema,
@@ -25,6 +26,7 @@ var Song = mongoose.model('Song', Song);
 
 var server = restify.createServer({ name: 'mongo-api' });
 
+
 server.use(
   function crossOrigin(req,res,next){
     res.header("Access-Control-Allow-Origin", "*");
@@ -32,6 +34,9 @@ server.use(
     return next();
   }
 ).use(restify.fullResponse()).use(restify.bodyParser());
+
+server.use(CookieParser.parse);
+
 
 server.get('/add/:id', function(req, res, next) {
 	var sid = req.params.id;
@@ -89,7 +94,10 @@ server.post('/adduser', function(req, res) {
 
 server.post('/login', function(req, res) {
   var data = req.params;
+  var cookies = req.cookies;
   user.login(data.username, md5(data.password), function(data) {
+    var cookieId = data.data._id;
+    res.setCookie('userid', cookieId);
     res.json(data);
   });
 });
