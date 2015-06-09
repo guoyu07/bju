@@ -96,8 +96,17 @@ server.post('/login', function(req, res) {
   var data = req.params;
   var cookies = req.cookies;
   user.login(data.username, md5(data.password), function(data) {
-    var cookieId = data.data._id;
-    res.setCookie('userid', cookieId);
+    if (data.data) {
+      var cookieId = data.data._id;
+      res.setCookie('userid', cookieId);
+    };
+    res.json(data);
+  });
+});
+
+server.post('/signup', function(req, res) {
+  var data = req.params;
+  user.create(data, function(data) {
     res.json(data);
   });
 });

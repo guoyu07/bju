@@ -77,6 +77,7 @@ User.prototype.create = function(data, callback) {
 		password: md5(data.password)
 		//email: data.email
 	};
+	console.log(userData);
 	var _user = new this._User(userData);
 	_user.save(function(error, data) {
 		if (!error) {
