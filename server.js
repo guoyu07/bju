@@ -1,28 +1,20 @@
 var restify = require('restify');
 var mongoose = require('mongoose');
+
+var db = mongoose.connect("mongodb://localhost");
+
 var user = require('./userModel').User;
+var song = require('./songModel').Song;
 var yun = require('./yun');
 var crypto = require('crypto');
 var qs = require('querystring');
 var CookieParser = require('restify-cookies');
 
-db = mongoose.createConnection("mongodb://localhost");
-var Schema = mongoose.Schema,
- ObjectId = Schema.ObjectID;
-var Song = new Schema({
-	sid: Number,
-	title: String,
-	artist: String,
-	pic: String,
-	url: String
-});
 
 function md5(string) {
 	var hash = crypto.createHash('md5').update(string).digest('hex');
 	return hash;
 }
-
-var Song = mongoose.model('Song', Song);
 
 var server = restify.createServer({ name: 'mongo-api' });
 
@@ -38,48 +30,47 @@ server.use(
 server.use(CookieParser.parse);
 
 
-server.get('/add/:id', function(req, res, next) {
-	var sid = req.params.id;
+server.post('/add', function(req, res, next) {
+	var sid = req.params.songId;
+  var userid = req.params.userId;
 	yun.songDetail(sid, function(data) {
 		var userData = {
 			sid: data.id,
 			title: data.title,
 			artist: data.artist,
 			pic: data.pic,
-			url: data.url
+			url: data.url,
+      _creator: userid
  		};
- 		var song = new Song(userData);
- 		song.save(function(error, data) {
- 			data = data || {};
- 			if (!error) {
- 				data.status = "success";
- 				res.json(data);
- 			} else {
- 				data.status = "fail";
- 				res.json(data);
- 			}
- 		})
+     console.log(userData);
+ 		song.add(userData, function(data) {
+       //data.status = "success";
+       res.json(data);
+     }, function(error) {
+       //data.status = "fail";
+       res.json(error);
+     });
 	});
 });
 server.get('/list', function(req, res, next) {
-	Song.find({}, function (error, song) {
-		if (!error) {
-			res.json(song);
-		}
-	});
+  song.find({}, function(data) {
+    res.json(data);
+  });
 });
+
 server.get('/delete/:id', function(req, res) {
 	var _id = req.params.id;
 	var msg = {_id : _id};
-	Song.remove({ '_id': _id}, function(error) {
-		if (!error) {
-			msg.status = 'success';
-		} else {
-			msg.status = 'fail';
-		}
-		res.json(msg);
-	});
+  song.delete(_id, function(error) {
+    if (!error) {
+      msg.status = 'success';
+    } else {
+      msg.status = 'fail';
+    }
+    res.json(msg);
+  });
 });
+
 server.post('/adduser', function(req, res) {
 	var data = req.params;
 	var userData = {

@@ -1,24 +1,22 @@
 var mongoose = require('mongoose');
 var crypto = require('crypto');
 
-var db = mongoose.connect("mongodb://localhost");
-
 var Schema = mongoose.Schema,
 	ObjectId = Schema.ObjectID;
 
 var UserSchema = new Schema({
 	name: String,
 	avatar: String,
-	password: String
-	//email: String,
-	//sid: String
+	password: String,
+	pubSongs: [{ type: Number, ref: 'Song' }],
+	favSongs: [{ type: Number, ref: 'Song' }] 
 });
 function md5(string) {
 	var hash = crypto.createHash('md5').update(string).digest('hex');
 	return hash;
 }
 function User(){
-	this._User = mongoose.model('UserSchema', UserSchema);
+	this._User = mongoose.model('User', UserSchema);
 }
 
 User.prototype.check = function(name, callback) {
@@ -77,7 +75,6 @@ User.prototype.create = function(data, callback) {
 		password: md5(data.password)
 		//email: data.email
 	};
-	console.log(userData);
 	var _user = new this._User(userData);
 	_user.save(function(error, data) {
 		if (!error) {
