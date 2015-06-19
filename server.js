@@ -40,7 +40,8 @@ server.post('/add', function(req, res, next) {
 			artist: data.artist,
 			pic: data.pic,
 			url: data.url,
-      _creator: userid
+      _creator: userid,
+			fans: [userid]
  		};
      console.log(userData);
  		song.add(userData, function(data) {
@@ -52,8 +53,23 @@ server.post('/add', function(req, res, next) {
      });
 	});
 });
+
+server.post('/fav', function(req, res, next) {
+	var sid = req.params.songId;
+	var userid = req.params.userId;
+	var faved = req.params.favd;
+	var condition = {};
+	if (faved) {
+		condition = {'$push': {'fans': userid}};
+	} else {
+		condition = {'$pull': {'fans': userid}};
+	}
+	song.update(sid, condition, function(data) {
+		res.json(data);
+	});
+});
 server.get('/list', function(req, res, next) {
-  song.find({}, function(data) {
+  song.find({}, {}, function(data) {
     res.json(data);
   });
 });
