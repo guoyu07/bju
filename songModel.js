@@ -33,10 +33,12 @@ Song.prototype.find = function(filter, pfilter, callback) {
   this._Song.find(filter)
             .populate({
 							path: '_creator',
-							match: pfilter
+							match: pfilter,
+							select: '_id name'
 						})
 						.populate({
-							path: 'fans'
+							path: 'fans',
+							select: '_id name'
 						})
             .exec(function(error, data) {
                 if (!error) {

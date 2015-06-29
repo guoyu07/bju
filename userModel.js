@@ -8,8 +8,8 @@ var UserSchema = new Schema({
 	name: String,
 	avatar: String,
 	password: String,
-	pubSongs: [{ type: Number, ref: 'Song' }],
-	favSongs: [{ type: Number, ref: 'Song' }]
+	pubSongs: [{ type: String, ref: 'Song' }],
+	favSongs: [{ type: String, ref: 'Song' }]
 });
 function md5(string) {
 	var hash = crypto.createHash('md5').update(string).digest('hex');
@@ -18,6 +18,20 @@ function md5(string) {
 function User(){
 	this._User = mongoose.model('User', UserSchema);
 }
+User.prototype.getInfo = function(name, callback) {
+	var options = {name: name};
+	this._User.findOne(options)
+						.populate({
+							path: 'pubSongs favSongs'
+						})
+						.exec(function(err, data) {
+							if (!err) {
+								callback(data);
+							} else {
+								console.error(err);
+							}
+						});
+};
 
 User.prototype.check = function(name, callback) {
 	var options = {name: name};
@@ -38,7 +52,21 @@ User.prototype.check = function(name, callback) {
 			callback(data);
 		}
 	});
-}
+};
+
+User.prototype.update = function(id, condition, callback) {
+	var callback = callback || function() {};
+	this._User.findByIdAndUpdate(id,
+		condition,
+		{safe: true, upsert: true},
+		function(err, user) {
+		if (!err) {
+			callback(user);
+		} else {
+			console.log(err);
+		}
+	});
+};
 
 User.prototype.login = function(username, password, callback) {
 	callback = callback || function() { }

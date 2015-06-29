@@ -5,7 +5,7 @@ var qs = require('querystring');
 exports.songDetail = function(id, callback) {
 	var url = "http://music.163.com/api/song/detail/?id=" + id + "&ids=%5B" + id + "%5D";
 	var headers = {
-		'Cookie' : 'appver=1.5.0.75771;', 
+		'Cookie' : 'appver=1.5.0.75771;',
 		'Referer' : 'http://music.163.com'
 	};
 	var options = {
@@ -15,16 +15,21 @@ exports.songDetail = function(id, callback) {
 	};
 
 	request(options, function(error, response, body) {
-	    var dict = JSON.parse(body);
-	    dict = dict.songs[0];
-	    var data = {
-	    	'artist': dict.artists[0].name,
-	    	'title': dict.name,
-	    	'id': dict.id,
-	    	'pic': dict.album.picUrl,
-	    	'url': dict.mp3Url	    
-	    }
-	    callback(data);
+		if (!error) {
+			var dict = JSON.parse(body);
+			dict = dict.songs[0];
+			var data = {
+				'artist': dict.artists[0].name,
+				'title': dict.name,
+				'id': dict.id,
+				'pic': dict.album.picUrl,
+				'url': dict.mp3Url
+			}
+			callback(false, data);			
+		} else {
+			callback(true, {});
+		}
+
 	});
 }
 

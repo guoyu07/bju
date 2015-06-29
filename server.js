@@ -9,7 +9,7 @@ var yun = require('./yun');
 var crypto = require('crypto');
 var qs = require('querystring');
 var CookieParser = require('restify-cookies');
-
+var Promise = require('promise');
 
 function md5(string) {
 	var hash = crypto.createHash('md5').update(string).digest('hex');
@@ -31,42 +31,93 @@ server.use(CookieParser.parse);
 
 
 server.post('/add', function(req, res, next) {
+
 	var sid = req.params.songId;
   var userid = req.params.userId;
-	yun.songDetail(sid, function(data) {
+
+	//three promises bind together, looks amazing~
+	function getSongDetail(sid) {
+		return new Promise(function(resolve, reject) {
+			yun.songDetail(sid, function(err, data) {
+				if (!err) {
+					resolve(data);
+				} else {
+					reject(err);
+				}
+			});
+		});
+	};
+
+	function addSong(data) {
 		var userData = {
 			sid: data.id,
 			title: data.title,
 			artist: data.artist,
 			pic: data.pic,
 			url: data.url,
-      _creator: userid,
-			fans: [userid]
- 		};
-     console.log(userData);
- 		song.add(userData, function(data) {
-       //data.status = "success";
-       res.json(data);
-     }, function(error) {
-       //data.status = "fail";
-       res.json(error);
-     });
-	});
+			_creator: userid,
+			fans: []
+		};
+		return new Promise(function(resolve, reject) {
+			song.add(userData, function(data) {
+				//data.status = "success";
+				resolve(data);
+			}, function(error) {
+				//data.status = "fail";
+				reject(error);
+			});
+		});
+	};
+
+	function userAddSong(song) {
+		var condition = {'$push': {'pubSongs': song._id}};
+
+		user.update(userid, condition, function(data) {
+			res.json(song);
+		})
+	};
+
+	getSongDetail(sid).then(addSong).then(userAddSong);
+
+
 });
 
 server.post('/fav', function(req, res, next) {
 	var sid = req.params.songId;
 	var userid = req.params.userId;
-	var faved = req.params.favd;
-	var condition = {};
+	var faved = req.params.faved;
+	console.log(faved);
+	var condition = {},
+			uCondition = {};
+
 	if (faved) {
 		condition = {'$push': {'fans': userid}};
+		uCondition = {'$push': {'favSongs': sid}};
 	} else {
 		condition = {'$pull': {'fans': userid}};
+		uCondition = {'$pull': {'favSongs': sid}};
 	}
-	song.update(sid, condition, function(data) {
-		res.json(data);
-	});
+
+	function updateSongFav() {
+		return new Promise(function(resolve, reject) {
+			song.update(sid, condition, function(data) {
+				console.log(data);
+				resolve(data);
+			});
+		});
+	};
+	function updateUserFav() {
+		return new Promise(function(resolve, reject) {
+			user.update(userid, uCondition, function(data) {
+				resolve(data);
+			})
+		});
+	};
+	Promise.all([updateSongFav(), updateUserFav()])
+				 .then(function(data) {
+						res.json(data);
+				 });
+
 });
 server.get('/list', function(req, res, next) {
   song.find({}, {}, function(data) {
@@ -136,13 +187,12 @@ server.get('/connect/:sid', function(req, res, next) {
     //res.json(dinfo);
 	});
 });
-server.get('/users', function(req, res, next) {
-	var users = [
-		{id: 1, name: 'viking'},
-		{id: 2, name: 'weson'},
-		{id: 3, name: 'lee hao'}
-	];
-	res.json(users);
+server.get('/user/:name', function(req, res, next) {
+	var username = req.params.name;
+	user.getInfo(username, function(data) {
+		res.json(data);
+	})
+
 });
 server.get('/song/:id', function(req, res, next) {
 	yun.songDetail(req.params.id, function(data) {
@@ -150,6 +200,7 @@ server.get('/song/:id', function(req, res, next) {
 		next();
 	});
 });
+
 server.listen(5000, function() {
 	console.log('%s listening at %s', server.name, server.url);
 });
