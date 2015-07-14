@@ -34,7 +34,6 @@ server.post('/add', function(req, res, next) {
 
 	var sid = req.params.songId;
   var userid = req.params.userId;
-
 	//three promises bind together, looks amazing~
 	function getSongDetail(sid) {
 		return new Promise(function(resolve, reject) {
@@ -49,12 +48,16 @@ server.post('/add', function(req, res, next) {
 	};
 
 	function addSong(data) {
+		if (!data.lyrics) {
+			data.lyrics = '';
+		}
 		var userData = {
 			sid: data.id,
 			title: data.title,
 			artist: data.artist,
 			pic: data.pic,
 			url: data.url,
+			lyrics: data.lyrics,
 			_creator: userid,
 			fans: []
 		};
@@ -86,7 +89,6 @@ server.post('/fav', function(req, res, next) {
 	var sid = req.params.songId;
 	var userid = req.params.userId;
 	var faved = req.params.faved;
-	console.log(faved);
 	var condition = {},
 			uCondition = {};
 
@@ -101,7 +103,6 @@ server.post('/fav', function(req, res, next) {
 	function updateSongFav() {
 		return new Promise(function(resolve, reject) {
 			song.update(sid, condition, function(data) {
-				console.log(data);
 				resolve(data);
 			});
 		});
@@ -194,11 +195,29 @@ server.get('/user/:name', function(req, res, next) {
 	})
 
 });
+
 server.get('/song/:id', function(req, res, next) {
-	yun.songDetail(req.params.id, function(data) {
-		res.send(data);
+	var sid = req.params.id * 1;
+	song.findOne(sid, function(err, data) {
+		if (!err) {
+			data.type = 'success';
+			res.json(data);
+		} else {
+			var emsg = {
+				type: 'fail',
+				msg: 'id is not valid'
+			}
+			res.json(emsg);
+		}
+
 		next();
 	});
+	/*yun.songDetail(req.params.id, function(err, data) {
+		if (!err) {
+			res.json(data);
+		}
+		next();
+	});*/
 });
 
 server.listen(5000, function() {

@@ -9,6 +9,7 @@ var SongSchema = new Schema({
 	artist: String,
 	pic: String,
 	url: String,
+	lyrics: String,
   _creator: { type: String, ref: 'User' },
 	fans: [{type: String, ref: 'User'}]
 });
@@ -31,6 +32,7 @@ Song.prototype.add = function(data, callback, fail) {
 
 Song.prototype.find = function(filter, pfilter, callback) {
   this._Song.find(filter)
+						.select('sid title artist _creator fans url pic')
             .populate({
 							path: '_creator',
 							match: pfilter,
@@ -49,6 +51,29 @@ Song.prototype.find = function(filter, pfilter, callback) {
 									})
                   callback(data);
                 }
+              }
+            );
+}
+Song.prototype.findOne = function(sid, callback) {
+  this._Song.findOne({'sid': sid})
+            .populate({
+							path: '_creator',
+							select: '_id name'
+						})
+						.populate({
+							path: 'fans',
+							select: '_id name'
+						})
+            .exec(function(error, data) {
+                if (!error) {
+									if (data) {
+										callback(false, data);
+									} else {
+										callback(true, {});
+									}
+                } else {
+									callback(true, {});
+								}
               }
             );
 }
