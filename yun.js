@@ -16,7 +16,6 @@ function getSongInfo(options) {
     request(options, function(error, response, body) {
       if (!error) {
         var dict = JSON.parse(body);
-				console.log(dict);
         dict = dict.songs[0];
         var data = {
           'artist': dict.artists[0].name,
@@ -63,7 +62,6 @@ function getLyric(data) {
 
 exports.songDetail = function(id, callback) {
 	var url = "http://music.163.com/api/song/detail/?id=" + id + "&ids=%5B" + id + "%5D";
-	console.log(url);
 	var headers = {
 		'Cookie' : 'appver=1.5.0.75771;',
 		'Referer' : 'http://music.163.com'

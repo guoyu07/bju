@@ -29,7 +29,50 @@ server.use(
 
 server.use(CookieParser.parse);
 
+server.get('/song/:id', function(req, res, next) {
+	var sid = req.params.id * 1;
+	//first select song from the databse
+	//check if it's exsit
+	function getSongFromDB (sid) {
+		return new Promise(function(resolve, reject) {
+			song.findOne(sid, function(err, data) {
+				if (!err) {
+					data.exsit = true;
+					resolve(data);
+				} else {
+					var emsg = {
+						exsit: false,
+						sid: sid
+					}
+					resolve(emsg);
+				}
+			});
+		})
+	}
 
+	//if it's not exsit, fetch it from the yun.js script
+	function getSongFromYun(data) {
+		var exsit = data.exsit;
+		return new Promise(function(resolve, reject) {
+			if (exsit) {
+				console.log(data);
+				resolve(data);
+			} else {
+				yun.songDetail(sid, function(err, data) {
+					if (!err) {
+						data.exsit = false;
+						resolve(data);
+					} else {
+						reject(err);
+					}
+				});
+			}
+		});
+	}
+	getSongFromDB(sid).then(getSongFromYun).then(function(data) {
+		res.json(data);
+	});
+});
 server.post('/add', function(req, res, next) {
 
 	var sid = req.params.songId;
@@ -196,7 +239,7 @@ server.get('/user/:name', function(req, res, next) {
 
 });
 
-server.get('/song/:id', function(req, res, next) {
+/*server.get('/song/:id', function(req, res, next) {
 	var sid = req.params.id * 1;
 	song.findOne(sid, function(err, data) {
 		if (!err) {
@@ -212,13 +255,13 @@ server.get('/song/:id', function(req, res, next) {
 
 		next();
 	});
-	/*yun.songDetail(req.params.id, function(err, data) {
+	yun.songDetail(req.params.id, function(err, data) {
 		if (!err) {
 			res.json(data);
 		}
 		next();
-	});*/
-});
+	});
+});*/
 
 server.listen(5000, function() {
 	console.log('%s listening at %s', server.name, server.url);
