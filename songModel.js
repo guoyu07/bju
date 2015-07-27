@@ -7,6 +7,7 @@ var SongSchema = new Schema({
 	sid: Number,
 	title: String,
 	artist: String,
+	album: String,
 	pic: String,
 	url: String,
 	lyrics: String,

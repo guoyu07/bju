@@ -5,6 +5,7 @@ var db = mongoose.connect("mongodb://localhost");
 
 var user = require('./userModel').User;
 var song = require('./songModel').Song;
+var collection = require('./collectionModel').Collection;
 var yun = require('./yun');
 var crypto = require('crypto');
 var qs = require('querystring');
@@ -55,12 +56,11 @@ server.get('/song/:id', function(req, res, next) {
 		var exsit = data.exsit;
 		return new Promise(function(resolve, reject) {
 			if (exsit) {
-				console.log(data);
 				resolve(data);
 			} else {
 				yun.songDetail(sid, function(err, data) {
 					if (!err) {
-						data.exsit = false;
+						data.noexsit = true;
 						resolve(data);
 					} else {
 						reject(err);
@@ -73,10 +73,17 @@ server.get('/song/:id', function(req, res, next) {
 		res.json(data);
 	});
 });
+server.post('/create', function(req, res, next) {
+	var postData = req.params;
+	collection.create(postData, function(data) {
+		res.json(data);
+	})
+});
 server.post('/add', function(req, res, next) {
 
 	var sid = req.params.songId;
   var userid = req.params.userId;
+
 	//three promises bind together, looks amazing~
 	function getSongDetail(sid) {
 		return new Promise(function(resolve, reject) {
@@ -124,7 +131,6 @@ server.post('/add', function(req, res, next) {
 	};
 
 	getSongDetail(sid).then(addSong).then(userAddSong);
-
 
 });
 
@@ -238,30 +244,6 @@ server.get('/user/:name', function(req, res, next) {
 	})
 
 });
-
-/*server.get('/song/:id', function(req, res, next) {
-	var sid = req.params.id * 1;
-	song.findOne(sid, function(err, data) {
-		if (!err) {
-			data.type = 'success';
-			res.json(data);
-		} else {
-			var emsg = {
-				type: 'fail',
-				msg: 'id is not valid'
-			}
-			res.json(emsg);
-		}
-
-		next();
-	});
-	yun.songDetail(req.params.id, function(err, data) {
-		if (!err) {
-			res.json(data);
-		}
-		next();
-	});
-});*/
 
 server.listen(5000, function() {
 	console.log('%s listening at %s', server.name, server.url);

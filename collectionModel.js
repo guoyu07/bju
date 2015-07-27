@@ -21,14 +21,14 @@ Collection.prototype.create = function(data, callback) {
   callback = callback || function() {};
   this._Collection.create(data, function(err, data) {
     if (!err) {
-      callback(data)
+      callback(data);
     }
   })
 }
 
 Collection.prototype.find = function(filter, callback) {
   callback = callback || function() {};
-  this._Collection.find(filter).
+  this._Collection.find(filter)
                   .populate({
                     path: '_creator',
                     select: '_id name'

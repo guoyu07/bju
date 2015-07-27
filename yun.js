@@ -22,7 +22,8 @@ function getSongInfo(options) {
           'title': dict.name,
           'id': dict.id,
           'pic': dict.album.picUrl,
-          'url': dict.mp3Url
+          'url': dict.mp3Url,
+          'album': dict.album.name
         }
         resolve(data);
       } else {
