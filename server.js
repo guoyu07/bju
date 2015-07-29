@@ -26,8 +26,9 @@ server.use(
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     return next();
   }
-).use(restify.fullResponse()).use(restify.bodyParser());
-
+).use(restify.fullResponse());
+//server.use(restify.jsonBodyParser());
+server.use(restify.queryParser());
 server.use(CookieParser.parse);
 
 server.get('/song/:id', function(req, res, next) {
@@ -78,6 +79,9 @@ server.post('/create', function(req, res, next) {
 	collection.create(postData, function(data) {
 		res.json(data);
 	})
+});
+server.post('/upload', function(req, res, next) {
+	console.log(req.files);
 });
 server.post('/add', function(req, res, next) {
 

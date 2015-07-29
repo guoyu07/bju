@@ -22,7 +22,12 @@ User.prototype.getInfo = function(name, callback) {
 	var options = {name: name};
 	this._User.findOne(options)
 						.populate({
-							path: 'pubSongs favSongs'
+							path: 'pubSongs',
+							select: '_id title artist'
+						})
+						.populate({
+							path: 'favSongs',
+							select: '_id title artist'
 						})
 						.exec(function(err, data) {
 							if (!err) {

@@ -44,8 +44,24 @@ Collection.prototype.find = function(filter, callback) {
                   .exec(function(err, data) {
                     if (!err) {
                         callback(data);
-                    }
+                    } else {
+											console.error(err);
+										}
                   });
 }
-
+Collection.prototype.findOne = function(id, callback) {
+	callback = callback = function() {};
+	this._Collection.findById(id)
+									.populate({
+										path: '_creator',
+										select: '_id name'
+									})
+									.exec(function(err, data) {
+										if (!err) {
+											callback(data)
+										} else {
+											console.error(err);
+										}
+									});
+}
 exports.Collection = new Collection();
