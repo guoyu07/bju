@@ -16,16 +16,36 @@ function getSongInfo(options) {
     request(options, function(error, response, body) {
       if (!error) {
         var dict = JSON.parse(body);
-        dict = dict.songs[0];
-        var data = {
-          'artist': dict.artists[0].name,
-          'title': dict.name,
-          'id': dict.id,
-          'pic': dict.album.picUrl,
-          'url': dict.mp3Url,
-          'album': dict.album.name
+        if (dict.code * 1 === 200 ) {
+          if (dict.songs.length > 0) {
+            dict = dict.songs[0];
+            var data = {
+              'artist': dict.artists[0].name,
+              'title': dict.name,
+              'id': dict.id,
+              'pic': dict.album.picUrl,
+              'url': dict.mp3Url,
+              'album': dict.album.name,
+              'pass': true
+            }
+            resolve(data);
+          } else {
+            var data = {
+              message: 'this id doesn\'t exsits ',
+              pass: false
+            }
+            resolve(data);
+          }
+
+        } else {
+          var data = {
+            message: 'invalid id format',
+            pass: false
+          };
+          resolve(data);
         }
-        resolve(data);
+
+
       } else {
         reject(error);
       }
@@ -35,30 +55,36 @@ function getSongInfo(options) {
 };
 
 function getLyric(data) {
-  var artist = data.artist.replace(/\s/g, '_');
-  var title = data.title.replace(/\s/g, '_');
-  var options = {
-    'uri': 'http://lyrics.wikia.com/' + artist + ':' + title + '',
-    'method': 'GET'
-  };
-  return new Promise(function(resolve, reject) {
-    request(options, function(error, response, body) {
-      if (!error) {
-        var $ = cheerio.load(body);
-        var html = $('.lyricbox').html();
-        if (html) {
-          html = html.replace(/<script>.*<\/script>|<div.*<\/div>|<!--[\s\S]*?-->/g, '');
-					escape = htmlspecialchars(html);
-					data.lyrics = escape;
-          resolve(data);
+
+  if (data.pass) {
+    var artist = data.artist.replace(/\s/g, '_');
+    var title = data.title.replace(/\s/g, '_');
+    var options = {
+      'uri': 'http://lyrics.wikia.com/' + artist + ':' + title + '',
+      'method': 'GET'
+    };
+    return new Promise(function(resolve, reject) {
+      request(options, function(error, response, body) {
+        if (!error) {
+          var $ = cheerio.load(body);
+          var html = $('.lyricbox').html();
+          if (html) {
+            html = html.replace(/<script>.*<\/script>|<div.*<\/div>|<!--[\s\S]*?-->/g, '');
+  					escape = htmlspecialchars(html);
+  					data.lyrics = escape;
+            resolve(data);
+          } else {
+            resolve(data);
+          }
         } else {
-          resolve(data);
+          reject(error);
         }
-      } else {
-        reject(error);
-      }
-    })
-  });
+      })
+    });
+  } else {
+    return Promise.resolve(data);
+  }
+
 };
 
 exports.songDetail = function(id, callback) {

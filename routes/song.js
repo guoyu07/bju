@@ -1,4 +1,5 @@
 var song = require('../models/song').Song;
+var user = require('../models/user').User;
 var express = require('express');
 var router = express.Router();
 
@@ -13,8 +14,45 @@ router.route('/songs')
         });
       })
       .post(function(req, res) {
-        var data = req.params;
+        var data = req.body;
+        var userid = data.userid;
+        function addSong(data) {
+      		if (!data.lyrics) {
+      			data.lyrics = '';
+      		}
+      		var userData = {
+      			sid: data.id,
+      			title: data.title,
+      			artist: data.artist,
+      			pic: data.pic,
+            album: data.album,
+      			url: data.url,
+      			lyrics: data.lyrics,
+      			_creator: userid,
+      			fans: []
+      		};
+      		return new Promise(function(resolve, reject) {
+      			song.add(userData, function(data) {
+      				//data.status = "success";
+      				resolve(data);
+      			}, function(error) {
+      				//data.status = "fail";
+      				reject(error);
+      			});
+      		});
+      	};
 
+      	function userAddSong(song) {
+      		var condition = {'$push': {'pubSongs': song._id}};
+
+      		user.update(userid, condition, function(data) {
+            song = song.toJSON();
+            song.exsit = false;
+      			res.json(song);
+      		})
+      	};
+
+        addSong(data).then(userAddSong);
       });
 //route for single song
 router.route('/song/:id')
@@ -26,8 +64,9 @@ router.route('/song/:id')
       		return new Promise(function(resolve, reject) {
       			song.findOne(sid, function(err, data) {
       				if (!err) {
+                data = data.toJSON();
       					data.exsit = true;
-                console.log(data);
+                data.pass = true;
       					resolve(data);
       				} else {
       					var emsg = {
