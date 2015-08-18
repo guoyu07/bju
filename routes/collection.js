@@ -10,7 +10,7 @@ router.route('/collections')
         });
       })
       .post(function(req, res) {
-        var postData = req.params;
+        var postData = req.body;
         collection.create(postData, function(data) {
           res.json(data);
         })

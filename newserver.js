@@ -23,7 +23,8 @@ var server = express();
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
-
+//server static image file
+server.use('/static', express.static('static'));
 
 //override the server with middleware route
 server.use(prefix, songRoute);
@@ -31,12 +32,17 @@ server.use(prefix, collectionRoute);
 server.use(prefix, userRoute);
 server.use(prefix, utilRoute);
 
-var handler = upload.single('photo');
+server.get('/test', function(req, res) {
+    res.sendfile('./html/test.html');
+});
+
+/*var handler = upload.single('photo');
 //split upload endpoint out
 server.post('/upload', handler, function (req, res, next) {
   // req.file is the `avatar` file
   console.log(req.file);
-});
+  res.json(req.file);
+});*/
 
 server.listen(port);
 console.log('Magic happens on port ' + port);
