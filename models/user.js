@@ -8,6 +8,7 @@ var UserSchema = new Schema({
 	name: String,
 	avatar: String,
 	password: String,
+	admin: {type: Boolean, default: false},
 	pubSongs: [{ type: String, ref: 'Song' }],
 	favSongs: [{ type: String, ref: 'Song' }]
 });

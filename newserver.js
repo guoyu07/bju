@@ -2,6 +2,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 var multer  = require('multer');
 var upload = multer({ dest: './uploads/' });
 
@@ -22,7 +23,7 @@ var server = express();
 // this will let us get the data from a POST
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
-
+server.use(session({'secret': 'vikingmute'}));
 //server static image file
 server.use('/static', express.static('static'));
 
@@ -31,10 +32,6 @@ server.use(prefix, songRoute);
 server.use(prefix, collectionRoute);
 server.use(prefix, userRoute);
 server.use(prefix, utilRoute);
-
-server.get('/test', function(req, res) {
-    res.sendfile('./html/test.html');
-});
 
 /*var handler = upload.single('photo');
 //split upload endpoint out

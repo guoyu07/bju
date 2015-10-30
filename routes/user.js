@@ -20,17 +20,45 @@ router.route('/users')
       });
 router.route('/login')
       .post(function(req, res) {
-        var data = req.params;
-        user.login(data.username, md5(data.password), function(data) {
+        var data = req.body;
+				var sess = req.session;
+        user.login(data.username, md5(data.password + ''), function(data) {
+					//generate the token
+					var token = crypto.randomBytes(64).toString('hex');
+					//save the token to server session
+					sess.token = token;
+					data.token = token;
           res.json(data);
         })
       });
+router.route('/logout')
+			.post(function(req, res) {
+				var data = req.body;
+				var sess = req.session;
+				if (data.token === sess.token) {
+					//clear the session
+					delete sess.token;
+					res.status(200).json({'msg': 'logout'});
+				} else {
+					res.status(401).json({'msg': 'invalid token'});
+				}
+			});
 router.route('/user/:name')
       .get(function(req, res) {
         var name = req.params.name;
-        user.getInfo(name, function(data) {
-          res.json(data);
-        })
+				var authorization = req.headers['authorization'];
+				var sess = req.session;
+				switch (authorization) {
+					default:
+						return res.status(401).end('Please login to access this page');
+					case 'Token token=expired':
+						return res.status(401).end('Your token is expired');
+					case 'Token token=' + sess.token:
+						user.getInfo(name, function(data) {
+		          res.json(data);
+		        });
+				};
+
       })
       .delete(function(req, res) {
         var name = req.params.name;
