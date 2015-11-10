@@ -13,7 +13,8 @@ router.route('/users')
 
       })
       .post(function(req, res) {
-        var data = req.params;
+        var data = req.body;
+				console.log(data);
         user.create(data, function(data) {
           res.json(data);
         });
@@ -42,6 +43,13 @@ router.route('/logout')
 				} else {
 					res.status(401).json({'msg': 'invalid token'});
 				}
+			});
+router.route('/checkuser/:name')
+			.get(function(req, res) {
+				var name = req.params.name;
+				user.check(name, function(data){
+					res.json(data);
+				});
 			});
 router.route('/user/:name')
       .get(function(req, res) {
