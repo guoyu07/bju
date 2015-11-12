@@ -58,6 +58,9 @@ router.route('/logout')
 				if (data.token === sess.token) {
 					//clear the session
 					delete sess.token;
+					//clear the cookie
+					res.clearCookie('cid');
+					res.clearCookie('uname');
 					res.status(200).json({'msg': 'logout'});
 				} else {
 					res.status(401).json({'msg': 'invalid token'});

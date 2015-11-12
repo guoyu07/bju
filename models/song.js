@@ -33,7 +33,7 @@ Song.prototype.add = function(data, callback, fail) {
 
 Song.prototype.find = function(filter, pfilter, callback) {
   this._Song.find(filter)
-						.select('sid title artist _creator fans url pic')
+						.select('sid title artist _creator fans url pic album')
             .populate({
 							path: '_creator',
 							match: pfilter,

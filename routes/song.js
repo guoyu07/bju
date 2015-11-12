@@ -31,6 +31,7 @@ router.route('/songs')
       			_creator: userid,
       			fans: []
       		};
+          console.log(userData);
       		return new Promise(function(resolve, reject) {
       			song.add(userData, function(data) {
       				//data.status = "success";
