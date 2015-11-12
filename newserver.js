@@ -2,13 +2,13 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser')
 var session = require('express-session');
 var multer  = require('multer');
 var upload = multer({ dest: './uploads/' });
 
 //connect to mongodb
 var db = mongoose.connect("mongodb://localhost");
-
 //import all routes middleware
 var songRoute = require('./routes/song');
 var collectionRoute = require('./routes/collection');
@@ -23,6 +23,7 @@ var server = express();
 // this will let us get the data from a POST
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
+server.use(cookieParser());
 server.use(session({'secret': 'vikingmute'}));
 //server static image file
 server.use('/static', express.static('static'));

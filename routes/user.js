@@ -7,7 +7,23 @@ function md5(string) {
 	var hash = crypto.createHash('md5').update(string).digest('hex');
 	return hash;
 }
-
+router.route('/restore')
+			.get(function(req, res) {
+				var sess = req.session;
+				if (req.cookies.cid) {
+					var cid = req.cookies.cid;
+					var username = req.cookies.uname;
+					if (cid === sess.token) {
+						user.getInfo(username, function(data) {
+							res.json(data);
+						});
+					} else {
+						res.status(401).json({'error': 'wrong cid provide'});
+					}
+				} else {
+					res.status(401).json({'error': 'no cid provide'});
+				}
+			});
 router.route('/users')
       .get(function(req, res) {
 
@@ -23,12 +39,15 @@ router.route('/login')
       .post(function(req, res) {
         var data = req.body;
 				var sess = req.session;
-        user.login(data.username, md5(data.password + ''), function(data) {
+				var username = data.username;
+        user.login(username, md5(data.password + ''), function(data) {
 					//generate the token
 					var token = crypto.randomBytes(64).toString('hex');
 					//save the token to server session
 					sess.token = token;
 					data.token = token;
+					res.cookie('cid', token, {maxAge: 900000});
+					res.cookie('uname', username, {maxAge: 900000});
           res.json(data);
         })
       });
