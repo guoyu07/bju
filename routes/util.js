@@ -8,10 +8,39 @@ var user = require('../models/user').User;
 var gm = require('gm');
 var thumbFolder = __dirname + '/../static/thumbs/';
 var tempFolder = __dirname + '/../static/temps/';
+var fullFolder = __dirname + '/../static/fullsize/'
 var upload = multer({ dest: tempFolder });
+
+function savePhoto(folder, filename, size) {
+  return new Promise(function(resolve, reject) {
+    gm(tempFolder + filename)
+    .resize(size.width, size.height, '^')
+    .gravity('Center')
+    .crop(size.width, size.height)
+    .write(folder + filename + '.jpg', function(err) {
+      if (!err) {
+        var prefix = '';
+        var type = '';
+        if (folder.indexOf('thumbs') != -1) {
+          prefix = '/static/thumbs/';
+          type = 'thumbs';
+        } else if (folder.indexOf('fullsize') != -1) {
+          prefix = '/static/fullsize/';
+          type = 'fullsize';
+        } else {
+          reject({'error': 'no such folder'});
+        }
+        var message = {'type': type, 'result': true, 'path': prefix + filename + '.jpg'};
+        resolve(message);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
 router.route('/upload')
       .post(upload.single('photo'), function(req, res) {
-        gm(tempFolder + req.file.filename)
+        /*gm(tempFolder + req.file.filename)
         .resize(300, 300, '^')
         .gravity('Center')
         .crop(300, 300)
@@ -22,7 +51,18 @@ router.route('/upload')
           } else {
             console.error(err);
           }
-        })
+        })*/
+        var saveThumb = savePhoto(thumbFolder, req.file.filename, {width: 300, height: 300});
+        var saveFull = savePhoto(fullFolder, req.file.filename, {width: 1280, height: 600});
+        var msg = {};
+        Promise.all([saveThumb, saveFull]).then(function(objArr) {
+          objArr.forEach(function(photo) {
+            msg[photo.type] = photo.path;
+          });
+          res.json(msg);
+        }).catch(function(err) {
+          res.status(401).json({err: 'upload failed'});
+        });
       });
 
 router.route('/fav')

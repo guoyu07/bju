@@ -5,7 +5,8 @@ var Schema = mongoose.Schema,
 
 var CollectionSchema = new Schema({
 	title: String,
-	pic: String,
+	thumb: String,
+	fullsize: String,
   desc: String,
   date: String,
   _creator: { type: String, ref: 'User' },
