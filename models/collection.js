@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-
+var showdown = require('showdown');
 var Schema = mongoose.Schema,
 	ObjectId = Schema.ObjectID;
 
@@ -18,8 +18,17 @@ function Collection(){
 	this._Collection = mongoose.model('Collection', CollectionSchema);
 }
 
+function htmlspecialchars(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
 Collection.prototype.create = function(data, callback) {
   callback = callback || function() {};
+	if (data.desc) {
+		var converter = new showdown.Converter();
+		var html = converter.makeHtml(data.desc);
+		data.desc = htmlspecialchars(html);
+	}
   this._Collection.create(data, function(err, data) {
     if (!err) {
       callback(data);
