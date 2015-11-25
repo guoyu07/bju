@@ -82,4 +82,15 @@ Collection.prototype.findOne = function(id, callback) {
 										}
 									});
 }
+Collection.prototype.delete = function(id, callback) {
+	callback = callback || function() {};
+	this._Collection.findByIdAndRemove(id)
+									.exec(function(err, data) {
+										if (!err) {
+											callback(data);
+										} else {
+											console.error(err);
+										}
+									})
+}
 exports.Collection = new Collection();

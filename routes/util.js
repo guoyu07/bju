@@ -40,19 +40,7 @@ function savePhoto(folder, filename, size) {
 }
 router.route('/upload')
       .post(upload.single('photo'), function(req, res) {
-        /*gm(tempFolder + req.file.filename)
-        .resize(300, 300, '^')
-        .gravity('Center')
-        .crop(300, 300)
-        .write(thumbFolder + req.file.filename + '.jpg', function(err) {
-          if (!err) {
-            var message = {'result': true, 'path': '/static/thumbs/' + req.file.filename + '.jpg'};
-            res.json(message);
-          } else {
-            console.error(err);
-          }
-        })*/
-        var saveThumb = savePhoto(thumbFolder, req.file.filename, {width: 300, height: 300});
+        var saveThumb = savePhoto(thumbFolder, req.file.filename, {width: 350, height: 350});
         var saveFull = savePhoto(fullFolder, req.file.filename, {width: 1280, height: 600});
         var msg = {};
         Promise.all([saveThumb, saveFull]).then(function(objArr) {
