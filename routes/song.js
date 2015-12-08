@@ -5,7 +5,6 @@ var router = express.Router();
 
 var yun = require('../yun');
 var Promise = require('promise');
-
 //route for create a song
 router.route('/songs')
       .get(function(req, res) {
@@ -55,6 +54,7 @@ router.route('/songs')
 
         addSong(data).then(userAddSong);
       });
+//router for fetch song progress, using a sse
 //route for single song
 router.route('/song/:id')
       .get(function(req, res) {

@@ -1,8 +1,8 @@
 var request = require('request');
 var qs = require('querystring');
 var Promise = require('promise');
-var cheerio = require('cheerio');
-
+var lyrics = require('./lyrics');
+var messager = require('./utils/publish');
 function htmlspecialchars(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
@@ -14,6 +14,7 @@ function htmlspecialchars_decode(str) {
 function getSongInfo(options) {
   return new Promise(function(resolve, reject) {
     request(options, function(error, response, body) {
+      messager.emit('fetch', 'already finish fetching song info');
       if (!error) {
         var dict = JSON.parse(body);
         if (dict.code * 1 === 200 ) {
@@ -57,14 +58,9 @@ function getSongInfo(options) {
 function getLyric(data) {
 
   if (data.pass) {
-    var artist = data.artist.replace(/\s/g, '_');
-    var title = data.title.replace(/\s/g, '_');
-    var options = {
-      'uri': 'http://lyrics.wikia.com/' + artist + ':' + title + '',
-      'method': 'GET'
-    };
+
     return new Promise(function(resolve, reject) {
-      request(options, function(error, response, body) {
+      /*request(options, function(error, response, body) {
         if (!error) {
           var $ = cheerio.load(body);
           var html = $('.lyricbox').html();
@@ -79,7 +75,19 @@ function getLyric(data) {
         } else {
           reject(error);
         }
-      })
+      })*/
+      messager.emit('fetch', 'start fetching lyrics from 163.com');
+      //using phantom js to fetch the lyrics from 163.com
+      lyrics.fetchLyric(data.id, function(lyc) {
+        if (lyc != '') {
+          messager.emit('fetch', 'finish fetching the lyrics data');
+          escape = htmlspecialchars(lyc);
+          data.lyrics = escape;
+          resolve(data);
+        } else {
+          reject('no lyrics fetched');
+        }
+      });
     });
   } else {
     return Promise.resolve(data);
@@ -98,7 +106,8 @@ exports.songDetail = function(id, callback) {
 	    headers: headers,
 	    method: 'GET'
 	};
-
+  console.log(messager._events.fetch);
+  messager.emit('fetch', 'begin fetch');
 	getSongInfo(options).then(getLyric).then(function(data) {
 		callback(false, data);
 	}, function(error) {

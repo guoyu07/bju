@@ -6,11 +6,11 @@ var promise = require('promise');
 var song = require('../models/song').Song;
 var user = require('../models/user').User;
 var gm = require('gm');
+var messager = require('../utils/publish');
 var thumbFolder = __dirname + '/../static/thumbs/';
 var tempFolder = __dirname + '/../static/temps/';
 var fullFolder = __dirname + '/../static/fullsize/'
 var upload = multer({ dest: tempFolder });
-
 function savePhoto(folder, filename, size) {
   return new Promise(function(resolve, reject) {
     gm(tempFolder + filename)
@@ -52,7 +52,37 @@ router.route('/upload')
           res.status(401).json({err: 'upload failed'});
         });
       });
+router.route('/sse')
+      .get(function(req ,res) {
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive'
+        });
+        res.write('retry: 1000\n');
+        //res.flush();
+        function pingClient() {
+          res.write('\n\n');
+          //res.flush();
+        }
 
+        ssePingInterval = setInterval(pingClient, 30000);
+        //res.write('data: ' + JSON.stringify({ msg : 'hello world' })+ '\n\n');
+        setInterval(function() {
+          res.write("event: ping\n");
+          res.write("data: hello world\n\n");
+          //res.flush();
+        }, 2000);
+        /*messager.on('fetch', function(msg) {
+          console.log(msg + '_____');
+          res.write('data: ' + JSON.stringify({ msg : msg }) + '\n\n');
+          res.flush();
+        });*/
+        res.on('close', function() {
+          messager.removeAllListeners('fetch');
+          clearInterval(ssePingInterval);
+        });
+      });
 router.route('/fav')
       .post(function(req, res) {
         var sid = req.body.songId;
