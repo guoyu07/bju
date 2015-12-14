@@ -24,7 +24,17 @@ router.route('/collection/:id')
         });
       })
       .put(function(req, res) {
-
+        var id = req.params.id;
+        var postData = req.body;
+        postData.id = id;
+        collection.update(postData, function(err, data) {
+          console.log(data);
+          if (!err) {
+            res.json(data);
+          } else {
+            res.status(500).json(err);
+          }
+        });
       })
       .delete(function(req, res) {
         var id = req.params.id;

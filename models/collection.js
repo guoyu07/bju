@@ -8,6 +8,7 @@ var CollectionSchema = new Schema({
 	thumb: String,
 	fullsize: String,
   desc: String,
+	htmlDesc: String,
   date: String,
   _creator: { type: String, ref: 'User' },
 	fans: [{type: String, ref: 'User'}],
@@ -27,13 +28,31 @@ Collection.prototype.create = function(data, callback) {
 	if (data.desc) {
 		var converter = new showdown.Converter();
 		var html = converter.makeHtml(data.desc);
-		data.desc = htmlspecialchars(html);
+		data.htmlDesc = htmlspecialchars(html);
 	}
   this._Collection.create(data, function(err, data) {
     if (!err) {
       callback(data);
     }
-  })
+  });
+}
+
+Collection.prototype.update = function(data, callback) {
+	callback = callback || function() {};
+	var filter = {'_id': data.id};
+	if (data.desc) {
+		var converter = new showdown.Converter();
+		var html = converter.makeHtml(data.desc);
+		data.htmlDesc = htmlspecialchars(html);
+	}
+	this._Collection.findOneAndUpdate(filter, data, function(err, doc) {
+		console.log(doc);
+		if (!err) {
+			callback(false, doc);
+		} else {
+			callback(true, {});
+		}
+	});
 }
 
 Collection.prototype.find = function(filter, callback) {
@@ -47,10 +66,10 @@ Collection.prototype.find = function(filter, callback) {
                     path: 'fans',
                     select: '_id name'
                   })
-                  .populate({
+                  /*.populate({
                     path: 'songs',
                     select: 'sid title artist _creator fans url pic'
-                  })
+                  })*/
                   .exec(function(err, data) {
                     if (!err) {
                         callback(data);
@@ -72,7 +91,7 @@ Collection.prototype.findOne = function(id, callback) {
 									})
 									.populate({
 										path: 'songs',
-										select: 'sid title artist _creator fans url pic'
+										select: 'sid title album artist _creator fans url pic'
 									})
 									.exec(function(err, data) {
 										if (!err) {
