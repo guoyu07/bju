@@ -88,6 +88,8 @@ router.route('/fav')
         var sid = req.body.songId;
       	var userid = req.body.userId;
       	var faved = req.body.faved;
+        //check if heart a collection or a single song
+        var type = req.body.type;
       	var condition = {},
       			uCondition = {};
 

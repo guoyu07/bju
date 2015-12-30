@@ -60,7 +60,7 @@ Collection.prototype.find = function(filter, callback) {
   this._Collection.find(filter)
                   .populate({
                     path: '_creator',
-                    select: '_id name'
+                    select: '_id name avatar'
                   })
                   .populate({
                     path: 'fans',

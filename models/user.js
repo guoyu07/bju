@@ -10,7 +10,9 @@ var UserSchema = new Schema({
 	password: String,
 	admin: {type: Boolean, default: false},
 	pubSongs: [{ type: String, ref: 'Song' }],
-	favSongs: [{ type: String, ref: 'Song' }]
+	favSongs: [{ type: String, ref: 'Song' }],
+	pubCols: [{ type: String, ref: 'Collection' }],
+	favCols: [{ type: String, ref: 'Collection' }]
 });
 function md5(string) {
 	var hash = crypto.createHash('md5').update(string).digest('hex');
@@ -19,6 +21,18 @@ function md5(string) {
 function User(){
 	this._User = mongoose.model('User', UserSchema);
 }
+User.prototype.find = function(filter, callback) {
+	this._User.find(filter)
+						.select('name avatar admin')
+						.lean()
+						.exec(function(err, data) {
+							if (!err) {
+								callback(false, data);
+							} else {
+								callback(true, err);
+							}
+						});
+};
 User.prototype.getInfo = function(name, callback) {
 	var options = {name: name};
 	this._User.findOne(options)
@@ -119,8 +133,16 @@ User.prototype.create = function(data, callback) {
 
 
 
-User.prototype.logout = function() {
-
+User.prototype.delete = function(id, callback) {
+	callback = callback || function() {};
+	this._User.findByIdAndRemove(id)
+						.exec(function(err, data) {
+							if (!err) {
+								callback(data);
+							} else {
+								console.error(err);
+							}
+						})
 }
 
 exports.User = new User();

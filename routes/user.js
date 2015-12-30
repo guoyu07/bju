@@ -26,11 +26,19 @@ router.route('/restore')
 			});
 router.route('/users')
       .get(function(req, res) {
-
+				user.find({}, function(err, data) {
+					if (!err) {
+						data.forEach(function(user) {
+							user.avatarUrl = "http://www.gravatar.com/avatar/" + md5(user.avatar) + "?s=70&d=retro";
+						});
+						res.json(data);
+					} else {
+						res.status(401).json(err);
+					}
+				});
       })
       .post(function(req, res) {
         var data = req.body;
-				console.log(data);
         user.create(data, function(data) {
           res.json(data);
         });
@@ -41,14 +49,19 @@ router.route('/login')
 				var sess = req.session;
 				var username = data.username;
         user.login(username, md5(data.password + ''), function(data) {
-					//generate the token
-					var token = crypto.randomBytes(64).toString('hex');
-					//save the token to server session
-					sess.token = token;
-					data.token = token;
-					res.cookie('cid', token, {maxAge: 900000});
-					res.cookie('uname', username, {maxAge: 900000});
-          res.json(data);
+					if (data.status === 'success') {
+						//generate the token
+						var token = crypto.randomBytes(64).toString('hex');
+						//save the token to server session
+						sess.token = token;
+						data.token = token;
+						res.cookie('cid', token, {maxAge: 900000});
+						res.cookie('uname', username, {maxAge: 900000});
+	          res.json(data);
+					} else {
+						res.status(401).json(data);
+					}
+
         })
       });
 router.route('/logout')
@@ -90,9 +103,16 @@ router.route('/user/:name')
 				};
 
       })
+			.put(function(req, res) {
+				var id = req.params.name;
+				var postData = req.body;
+				user.update(id, postData, function(data) {
+					res.json(data);
+				});
+			})
       .delete(function(req, res) {
-        var name = req.params.name;
-        user.delete(name, function(data) {
+        var id = req.params.name;
+        user.delete(id, function(data) {
           res.json(data);
         })
       });
