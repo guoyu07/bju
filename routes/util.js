@@ -5,6 +5,7 @@ var multer  = require('multer');
 var promise = require('promise');
 var song = require('../models/song').Song;
 var user = require('../models/user').User;
+var collection = require('../models/collection').Collection;
 var gm = require('gm');
 var messager = require('../utils/publish');
 var thumbFolder = __dirname + '/../static/thumbs/';
@@ -87,37 +88,69 @@ router.route('/fav')
       .post(function(req, res) {
         var sid = req.body.songId;
       	var userid = req.body.userId;
+        var cid = req.body.collectionId;
       	var faved = req.body.faved;
         //check if heart a collection or a single song
         var type = req.body.type;
+        type = type || 'song';
+
       	var condition = {},
       			uCondition = {};
+        function updateSongFav(songid, condition) {
+          return new Promise(function(resolve, reject) {
+            song.update(songid, condition, function(data) {
+              resolve(data);
+            });
+          });
+        };
+        function updateUserFav(userid, condition) {
+          return new Promise(function(resolve, reject) {
+            user.update(userid, condition, function(data) {
+              resolve(data);
+            })
+          });
+        };
+        function updateCollectionFav(cid, condition) {
+          return new Promise(function(resolve, reject) {
+            collection.updateFav(cid, condition, function(err, data) {
+              if (!err) {
+                resolve(data);
+              } else {
+                reject(data);
+              }
+            })
+          });
+        };
+        if (type === 'song') {
+          //fav a song
+          if (faved) {
+            condition = {'$push': {'fans': userid}};
+            uCondition = {'$push': {'favSongs': sid}};
+          } else {
+            condition = {'$pull': {'fans': userid}};
+            uCondition = {'$pull': {'favSongs': sid}};
+          }
+          Promise.all([updateSongFav(sid, condition), updateUserFav(userid, uCondition)])
+                 .then(function(data) {
+                    res.json(data);
+                 });
+        } else if (type === 'collection') {
+          //fav a collction
+          if (faved) {
+            condition = {'$push': {'fans': userid}};
+            uCondition = {'$push': {'favCols': cid}};
+          } else {
+            condition = {'$pull': {'fans': userid}};
+            uCondition = {'$pull': {'favCols': cid}};
+          }
+          Promise.all([updateCollectionFav(cid, condition), updateUserFav(userid, uCondition)])
+                 .then(function(data) {
+                    res.json(data);
+                 });
+        }
 
-      	if (faved) {
-      		condition = {'$push': {'fans': userid}};
-      		uCondition = {'$push': {'favSongs': sid}};
-      	} else {
-      		condition = {'$pull': {'fans': userid}};
-      		uCondition = {'$pull': {'favSongs': sid}};
-      	}
 
-      	function updateSongFav() {
-      		return new Promise(function(resolve, reject) {
-      			song.update(sid, condition, function(data) {
-      				resolve(data);
-      			});
-      		});
-      	};
-      	function updateUserFav() {
-      		return new Promise(function(resolve, reject) {
-      			user.update(userid, uCondition, function(data) {
-      				resolve(data);
-      			})
-      		});
-      	};
-      	Promise.all([updateSongFav(), updateUserFav()])
-      				 .then(function(data) {
-      						res.json(data);
-      				 });
+
+
       });
 module.exports = router;
