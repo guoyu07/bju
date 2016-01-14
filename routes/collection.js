@@ -19,7 +19,7 @@ router.route('/collections')
 router.route('/collection/:id')
       .get(function(req, res) {
         var id = req.params.id;
-        collection.find(id, function(data) {
+        collection.findOne(id, function(data) {
           res.json(data);
         });
       })
