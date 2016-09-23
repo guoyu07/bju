@@ -83,11 +83,13 @@ router.route('/song/:id')
       	//if it's not exsit, fetch it from the yun.js script
       	function getSongFromYun(data) {
       		var exsit = data.exsit;
+          console.log('database data', data);
       		return new Promise(function(resolve, reject) {
       			if (exsit) {
       				resolve(data);
       			} else {
       				yun.songDetail(sid, function(err, data) {
+                console.log('yun return value', data);
       					if (!err) {
       						data.noexsit = true;
       						resolve(data);

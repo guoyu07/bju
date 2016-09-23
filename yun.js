@@ -14,7 +14,6 @@ function htmlspecialchars_decode(str) {
 function getSongInfo(options) {
   return new Promise(function(resolve, reject) {
     request(options, function(error, response, body) {
-      messager.emit('fetch', 'already finish fetching song info');
       if (!error) {
         var dict = JSON.parse(body);
         if (dict.code * 1 === 200 ) {
@@ -60,27 +59,9 @@ function getLyric(data) {
   if (data.pass) {
 
     return new Promise(function(resolve, reject) {
-      /*request(options, function(error, response, body) {
-        if (!error) {
-          var $ = cheerio.load(body);
-          var html = $('.lyricbox').html();
-          if (html) {
-            html = html.replace(/<script>.*<\/script>|<div.*<\/div>|<!--[\s\S]*?-->/g, '');
-  					escape = htmlspecialchars(html);
-  					data.lyrics = escape;
-            resolve(data);
-          } else {
-            resolve(data);
-          }
-        } else {
-          reject(error);
-        }
-      })*/
-      messager.emit('fetch', 'start fetching lyrics from 163.com');
       //using phantom js to fetch the lyrics from 163.com
       lyrics.fetchLyric(data.id, function(lyc) {
         if (lyc != '') {
-          messager.emit('fetch', 'finish fetching the lyrics data');
           escape = htmlspecialchars(lyc);
           data.lyrics = escape;
           resolve(data);

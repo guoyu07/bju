@@ -4,8 +4,9 @@
   "description": "backend for yiju",
   "main": "server.js",
   "dependencies": {
-    "request": "^2.55.0",
-    "mongoose": "^4.0.1"
+    "mongoose": "^4.0.1",
+    "phantom": "^2.1.21",
+    "request": "^2.55.0"
   },
   "devDependencies": {
     "body-parser": "^1.13.2",
